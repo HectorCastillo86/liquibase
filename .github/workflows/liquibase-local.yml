@@ -1,0 +1,48 @@
+name: Liquibase Local Database Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      db_url:
+        description: 'URL de la base de datos'
+        required: true
+        default: 'jdbc:postgresql://localhost:5432/liquibase_demo'
+      db_username:
+        description: 'Usuario de la base de datos'
+        required: true
+        default: 'liquibase_user'
+      db_password:
+        description: 'Contraseña de la base de datos'
+        required: true
+        default: 'password'
+
+jobs:
+  liquibase-local:
+    name: Run Liquibase on Local Database
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+          
+      - name: Create Liquibase properties file
+        run: |
+          cat > src/main/resources/liquibase-local.properties << EOF
+          changeLogFile=db/changelog/db.changelog-master.yaml
+          url=${{ github.event.inputs.db_url }}
+          username=${{ github.event.inputs.db_username }}
+          password=${{ github.event.inputs.db_password }}
+          driver=org.postgresql.Driver
+          EOF
+          
+      - name: Run Liquibase Update
+        run: |
+          mvn liquibase:update \
+            -Dliquibase.propertyFile=src/main/resources/liquibase-local.properties

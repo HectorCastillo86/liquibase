@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2
+      author: liquibase
+      changes:
+        - insert:
+            tableName: tasks
+            columns:
+              - column:
+                  name: title
+                  value: "Implementar Liquibase"
+              - column:
+                  name: description
+                  value: "Configurar Liquibase con GitHub Actions"
+              - column:
+                  name: status
+                  value: "PENDING"
