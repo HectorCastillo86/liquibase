@@ -5,7 +5,7 @@ on:
     branches:
       - develop
     paths:
-      - 'src/main/resources/db/changelog/**'
+      - 'liquibase/src/main/resources/db/changelog/**'
   workflow_dispatch:
 
 jobs:
@@ -27,6 +27,7 @@ jobs:
           
       - name: Create Liquibase properties file
         run: |
+          cd liquibase
           cat > src/main/resources/liquibase-dev.properties << EOF
           changeLogFile=db/changelog/db.changelog-master.yaml
           url=${{ secrets.DEV_DB_URL }}
@@ -37,5 +38,6 @@ jobs:
           
       - name: Run Liquibase Update
         run: |
+          cd liquibase
           mvn liquibase:update \
             -Dliquibase.propertyFile=src/main/resources/liquibase-dev.properties

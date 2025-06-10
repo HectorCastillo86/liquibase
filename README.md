@@ -2,52 +2,41 @@
 
 Modelo para gestionar cambios de base de datos con Liquibase en múltiples ambientes usando GitHub Actions.
 
-## Configuración de Base de Datos Local
+## Ejecución local con Docker (sin necesidad de Maven)
 
-### Opción 1: PostgreSQL nativo
-
-1. Ejecuta el script para configurar la base de datos local:
+Para ejecutar Liquibase sin tener Maven instalado:
 
 ```bash
-./setup-local-db.sh
+./run-with-docker.sh
 ```
 
-### Opción 2: PostgreSQL con Docker (recomendado)
-
-1. Ejecuta el script para iniciar PostgreSQL con Docker:
-
-```bash
-./setup-docker-db.sh
-```
-
-### Ejecutar Liquibase localmente
-
-```bash
-./run-local.sh
-```
+Este comando:
+1. Levanta una base de datos PostgreSQL
+2. Ejecuta Liquibase usando un contenedor Maven
+3. Aplica los cambios a la base de datos
 
 ## Ejecución con GitHub Actions
 
-### Configuración de Secretos en GitHub
+### Opción 1: Base de datos temporal en GitHub Runner
 
-Para cada ambiente, configurar:
-
-- **Desarrollo**: `DEV_DB_URL`, `DEV_DB_USERNAME`, `DEV_DB_PASSWORD`
-- **Preproducción**: `STAGING_DB_URL`, `STAGING_DB_USERNAME`, `STAGING_DB_PASSWORD`
-- **Producción**: `PROD_DB_URL`, `PROD_DB_USERNAME`, `PROD_DB_PASSWORD`
-
-### Ejecución Local desde GitHub Actions
+Esta opción no requiere ninguna base de datos externa:
 
 1. Ve a la pestaña "Actions" en tu repositorio
-2. Selecciona el workflow "Liquibase Local Database Migration"
+2. Selecciona el workflow "Liquibase Database Migration - GitHub Runner"
 3. Haz clic en "Run workflow"
-4. Ingresa los parámetros de conexión a tu base de datos local:
-   - URL: jdbc:postgresql://localhost:5432/liquibase_demo
-   - Usuario: liquibase_user
-   - Contraseña: password
 
-### Flujo de Trabajo
+El workflow:
+- Crea una base de datos PostgreSQL temporal en el runner de GitHub
+- Ejecuta Liquibase contra esta base de datos
+- Verifica que los cambios se hayan aplicado correctamente
 
-1. **Desarrollo**: Despliegue automático al hacer push a `develop`
-2. **Preproducción**: Despliegue automático al hacer push a `staging` con generación de script SQL
-3. **Producción**: Despliegue manual con aprobación explícita y revisión de script SQL
+Esta opción es ideal para pruebas y validación de changelogs.
+
+### Opción 2: Base de datos en ambientes reales
+
+Para ambientes reales, configura los secretos en GitHub:
+
+- **Desarrollo**: `DEV_DB_URL`, `DEV_DB_USERNAME`, `DEV_DB_PASSWORD`
+- **Producción**: `PROD_DB_URL`, `PROD_DB_USERNAME`, `PROD_DB_PASSWORD`
+
+Y ejecuta los workflows correspondientes.

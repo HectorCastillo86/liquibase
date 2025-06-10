@@ -28,6 +28,7 @@ jobs:
           
       - name: Create Liquibase properties file
         run: |
+          cd liquibase
           cat > src/main/resources/liquibase-prod.properties << EOF
           changeLogFile=db/changelog/db.changelog-master.yaml
           url=${{ secrets.PROD_DB_URL }}
@@ -38,6 +39,7 @@ jobs:
           
       - name: Generate Update SQL Script
         run: |
+          cd liquibase
           mvn liquibase:updateSQL \
             -Dliquibase.propertyFile=src/main/resources/liquibase-prod.properties
             
@@ -52,5 +54,6 @@ jobs:
           
       - name: Run Liquibase Update
         run: |
+          cd liquibase
           mvn liquibase:update \
             -Dliquibase.propertyFile=src/main/resources/liquibase-prod.properties

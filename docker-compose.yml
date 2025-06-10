@@ -12,6 +12,20 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      
+  liquibase:
+    image: maven:3.8-openjdk-17
+    container_name: liquibase-runner
+    volumes:
+      - ../liquibase:/app
+    working_dir: /app
+    depends_on:
+      - postgres
+    command: >
+      /bin/bash -c "
+      sleep 5 &&
+      mvn liquibase:update -Dliquibase.propertyFile=src/main/resources/liquibase-docker.properties
+      "
 
 volumes:
   postgres_data:

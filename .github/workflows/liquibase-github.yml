@@ -1,0 +1,56 @@
+name: Liquibase Database Migration - GitHub Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  liquibase-github:
+    name: Run Liquibase on GitHub Runner
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: liquibase_demo
+          POSTGRES_USER: liquibase_user
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+          
+      - name: Create Liquibase properties file
+        run: |
+          cd liquibase
+          cat > src/main/resources/liquibase-github.properties << EOF
+          changeLogFile=db/changelog/db.changelog-master.yaml
+          url=jdbc:postgresql://localhost:5432/liquibase_demo
+          username=liquibase_user
+          password=password
+          driver=org.postgresql.Driver
+          EOF
+          
+      - name: Run Liquibase Update
+        run: |
+          cd liquibase
+          mvn liquibase:update -Dliquibase.propertyFile=src/main/resources/liquibase-github.properties
+          
+      - name: Verify Database Changes
+        run: |
+          cd liquibase
+          mvn liquibase:status -Dliquibase.propertyFile=src/main/resources/liquibase-github.properties
